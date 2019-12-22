@@ -1,5 +1,5 @@
 'use strict'
-var ethers = require('ethers')
+const ethers = require('ethers')
 
 module.exports = {
   /**
@@ -20,7 +20,7 @@ module.exports = {
     if (!callbacks.confirmationCb || !callbacks.gasEstimationForceSend || !callbacks.promptCb) {
       return finalCallback('all the callbacks must have been defined')
     }
-    var tx = { from: from, to: null, data: data, useCall: false, value: value, gasLimit: gasLimit }
+    const tx = { from: from, to: null, data: data, useCall: false, value: value, gasLimit: gasLimit }
     txRunner.rawRun(tx, callbacks.confirmationCb, callbacks.gasEstimationForceSend, callbacks.promptCb, (error, txResult) => {
       // see universaldapp.js line 660 => 700 to check possible values of txResult (error case)
       finalCallback(error, txResult)
@@ -43,7 +43,7 @@ module.exports = {
     * @param {Function} finalCallback    - last callback.
     */
   callFunction: function (from, to, data, value, gasLimit, funAbi, txRunner, callbacks, finalCallback) {
-    var tx = { from: from, to: to, data: data, useCall: funAbi.constant, value: value, gasLimit: gasLimit }
+    const tx = { from: from, to: to, data: data, useCall: funAbi.constant, value: value, gasLimit: gasLimit }
     txRunner.rawRun(tx, callbacks.confirmationCb, callbacks.gasEstimationForceSend, callbacks.promptCb, (error, txResult) => {
       // see universaldapp.js line 660 => 700 to check possible values of txResult (error case)
       finalCallback(error, txResult)
@@ -57,7 +57,7 @@ module.exports = {
     * @return {Object} -  { error: true/false, message: DOMNode }
     */
   checkVMError: function (txResult) {
-    var errorCode = {
+    const errorCode = {
       OUT_OF_GAS: 'out of gas',
       STACK_UNDERFLOW: 'stack underflow',
       STACK_OVERFLOW: 'stack overflow',
@@ -70,16 +70,16 @@ module.exports = {
       STOP: 'stop',
       REFUND_EXHAUSTED: 'refund exhausted'
     }
-    var ret = {
+    const ret = {
       error: false,
       message: ''
     }
     if (!txResult.result.execResult.exceptionError) {
       return ret
     }
-    var exceptionError = txResult.result.execResult.exceptionError.error || ''
-    var error = `VM error: ${exceptionError}.\n`
-    var msg
+    const exceptionError = txResult.result.execResult.exceptionError.error || ''
+    const error = `VM error: ${exceptionError}.\n`
+    let msg
     if (exceptionError === errorCode.INVALID_OPCODE) {
       msg = `\t\n\tThe execution might have thrown.\n`
       ret.error = true
@@ -87,11 +87,11 @@ module.exports = {
       msg = `\tThe transaction ran out of gas. Please increase the Gas Limit.\n`
       ret.error = true
     } else if (exceptionError === errorCode.REVERT) {
-      var returnData = txResult.result.execResult.returnValue
+      const returnData = txResult.result.execResult.returnValue
       // It is the hash of Error(string)
       if (returnData && (returnData.slice(0, 4).toString('hex') === '08c379a0')) {
-        var abiCoder = new ethers.utils.AbiCoder()
-        var reason = abiCoder.decode(['string'], returnData.slice(4))[0]
+        const abiCoder = new ethers.utils.AbiCoder()
+        const reason = abiCoder.decode(['string'], returnData.slice(4))[0]
         msg = `\tThe transaction has been reverted to the initial state.\nReason provided by the contract: "${reason}".`
       } else {
         msg = `\tThe transaction has been reverted to the initial state.\nNote: The called function should be payable if you send value and the value you send should be less than your current balance.`
